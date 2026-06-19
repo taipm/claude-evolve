@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# claude-evolve runtime store (this is the PLUGIN repo, not a user project)
+.claude/evolve/
+*.jsonl.processed
+.last-failure
+
+# OS
+.DS_Store

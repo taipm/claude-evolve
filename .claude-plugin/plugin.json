@@ -1,0 +1,20 @@
+{
+  "name": "claude-evolve",
+  "version": "0.1.0",
+  "description": "Self-improving skill loop for Claude Code — captures corrections, build failures and fixes, refines them in place, auto-promotes recurring lessons into auto-loading skills, and injects them into future sessions. Ports the Hermes Agent learning loop.",
+  "author": {
+    "name": "taipm",
+    "url": "https://git.microai.club/taipm"
+  },
+  "homepage": "https://git.microai.club/taipm/claude-evolve",
+  "repository": "https://git.microai.club/taipm/claude-evolve.git",
+  "license": "MIT",
+  "keywords": [
+    "self-improvement",
+    "learning",
+    "skills",
+    "feedback-loop",
+    "memory",
+    "auto-skill"
+  ]
+}
