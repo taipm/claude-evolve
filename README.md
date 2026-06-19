@@ -102,7 +102,43 @@ Commit `.claude/evolve/` to share learnings with your team, or gitignore it to k
 | `EVOLVE_ARCHIVE_DAYS` | `120` | Inactivity before a lesson is archived |
 | `EVOLVE_INJECT_MAX` | `12` | Max learnings injected per session |
 | `EVOLVE_INJECT_CHARS` | `2400` | Max chars injected per session |
-| `EVOLVE_LLM` | unset | Set `1` to polish lessons with `claude -p` |
+| `EVOLVE_MAX_SIGNALS` | `5000` | Guard against runaway `signals.jsonl` growth |
+| `EVOLVE_LLM` | unset | Set `1` to polish lessons with `claude -p` (opt-in; serializes consolidation) |
+| `EVOLVE_DEBUG` | unset | Set `1` to log silent hook errors to `.claude/evolve/debug.log` |
+
+Defaults are evidence-backed — see **Quality** below.
+
+---
+
+## Security & trust
+
+The store under `.claude/evolve/` is meant to be committable and shared, which makes it
+**trusted input**: cloning a repo with a poisoned `learnings.json` would surface its content
+to your session. Mitigations built in:
+
+- Injected context and generated `SKILL.md` bodies are **sanitized** — control characters
+  stripped, code-fence / heading / frontmatter break-outs defused — and explicitly framed
+  as *reference data, not instructions*.
+- Still: **review a third party's committed store before trusting it**, the same way you'd
+  review their code.
+- The optional `EVOLVE_LLM` polish sends lesson text to `claude -p`; keep it off if your
+  build output may contain untrusted/adversarial text.
+
+---
+
+## Quality
+
+Concurrency-safe (POSIX `fcntl` advisory lock around every store mutation; signals are
+claimed by atomic rename so a racing hook never loses one). Timestamps are UTC end-to-end.
+Two harnesses ship in `tests/`:
+
+```bash
+python3 tests/eval.py   # 17/17 — precision/recall, dedup, unicode slugs, injection, latency, TZ
+python3 tests/ab.py     # A/B study backing the default tunables
+```
+
+Hook latency is ~35–45 ms per turn. On non-POSIX platforms (Windows) locking degrades to
+best-effort; everything else is portable Python 3.8+ stdlib.
 
 ---
 

@@ -66,7 +66,17 @@ def mode_failure(payload: dict) -> None:
     cmd = (ti.get("command") or "").strip()
     if not cmd or not BUILD_RE.search(cmd):
         return
-    err = (payload.get("error") or payload.get("tool_output") or "")[:2000]
+    # Field name for the error text isn't guaranteed stable across Claude Code versions;
+    # probe the likely candidates so a build failure never lands with empty error text.
+    err = ""
+    for k in ("error", "tool_error", "tool_output", "stderr", "tool_response", "output"):
+        v = payload.get(k)
+        if isinstance(v, dict):
+            v = v.get("stderr") or v.get("error") or v.get("content") or ""
+        if v:
+            err = str(v)
+            break
+    err = err[:2000]
     if store.is_noise(err) or store.is_noise(cmd):
         return  # environment-specific / transient -> not a learning
     store.append_signal({
@@ -116,8 +126,8 @@ def main() -> None:
             mode_failure(payload)
         elif mode == "success":
             mode_success(payload)
-    except Exception:
-        pass  # never break the turn
+    except Exception as e:
+        store.debug(f"capture[{mode}] error: {e!r}")  # never break the turn
     sys.exit(0)
 
 
