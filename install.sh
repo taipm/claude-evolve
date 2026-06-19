@@ -5,7 +5,10 @@ set -euo pipefail
 
 GITEA_URL="https://git.microai.club/taipm/claude-evolve"
 GITHUB_URL="https://github.com/taipm/claude-evolve"
-SRC="${EVOLVE_SOURCE:-$GITEA_URL}"
+# Default to the GitHub mirror: anonymous git clone works everywhere. The Gitea
+# origin also supports anonymous clone, but its raw-file web endpoint requires login,
+# so the curl-bootstrap one-liner must come from GitHub. Override with EVOLVE_SOURCE.
+SRC="${EVOLVE_SOURCE:-$GITHUB_URL}"
 
 echo "claude-evolve installer"
 echo "  source: $SRC"

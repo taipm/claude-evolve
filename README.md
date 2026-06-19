@@ -55,7 +55,7 @@ claude plugin install claude-evolve@claude-evolve
 ### Option B — one-line installer
 
 ```bash
-curl -fsSL https://git.microai.club/taipm/claude-evolve/raw/branch/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/taipm/claude-evolve/main/install.sh | bash
 ```
 
 Restart Claude Code (or run `/reload-skills`). That's it — nothing to configure.
