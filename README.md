@@ -146,9 +146,17 @@ claimed by atomic rename so a racing hook never loses one). Timestamps are UTC e
 Two harnesses ship in `tests/`:
 
 ```bash
-python3 tests/eval.py   # 17/17 — precision/recall, dedup, unicode slugs, injection, latency, TZ
-python3 tests/ab.py     # A/B study backing the default tunables
+python3 tests/eval.py            # 19/19 — precision/recall, dedup, unicode slugs, injection, latency, TZ
+python3 tests/ab.py              # A/B study backing the default tunables
+python3 tests/effectiveness.py   # A/B leverage: repeat-rate ON vs OFF injection (deterministic)
+python3 tests/soak.py            # multi-session lifecycle + curator aging
 ```
+
+`effectiveness.py` runs the same error stream through the loop twice — with and without
+lesson injection — and reports how much the repeat-rate drops, swept over an assumed
+avoidance probability (12.5% / 25% / 50% reduction at p=0.3 / 0.6 / 0.9). And
+`recurrence_after_learning` in the live metrics counts, for real promoted lessons, how
+many recurred *after* they were learned (quiet = the loop is working).
 
 Hook latency is ~35–45 ms per turn. On non-POSIX platforms (Windows) locking degrades to
 best-effort; everything else is portable Python 3.8+ stdlib.

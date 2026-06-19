@@ -124,6 +124,10 @@ def _promote(rec: dict) -> None:
     (sdir / "SKILL.md").write_text(md)
     rec["promoted"] = True
     rec["skill"] = slug
+    # Stamp once so metrics can count recurrences that happened AFTER the lesson was learned.
+    if "promoted_at" not in rec:
+        rec["promoted_at"] = store.iso(store.now())
+        rec["seen_at_promotion"] = rec["seen_count"]
 
 
 def main() -> None:

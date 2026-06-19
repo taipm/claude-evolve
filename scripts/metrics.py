@@ -22,6 +22,34 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import store  # noqa: E402
 
 
+def _recurrence_after_learning(promoted: list) -> dict:
+    """Of promoted lessons with seen_at_promotion recorded, how many recurred afterwards?"""
+    instrumented = [r for r in promoted if "seen_at_promotion" in r]
+    n = len(instrumented)
+    if n == 0:
+        return {
+            "promoted": 0,
+            "recurred_after": 0,
+            "quiet_after": 0,
+            "avg_post_promotion_recurrences": 0.0,
+            "quiet_share": 0.0,
+        }
+    recurred_after = [r for r in instrumented
+                      if int(r["seen_count"]) > int(r["seen_at_promotion"])]
+    quiet_after = [r for r in instrumented
+                   if int(r["seen_count"]) == int(r["seen_at_promotion"])]
+    post_counts = [int(r["seen_count"]) - int(r["seen_at_promotion"]) for r in instrumented]
+    avg = round(sum(post_counts) / n, 2)
+    q = len(quiet_after)
+    return {
+        "promoted": n,
+        "recurred_after": len(recurred_after),
+        "quiet_after": q,
+        "avg_post_promotion_recurrences": avg,
+        "quiet_share": round(q / n, 3),
+    }
+
+
 def compute() -> dict:
     data = store.load_learnings()
     recs = list(data.values())
@@ -68,6 +96,7 @@ def compute() -> dict:
             "still_recurring": recurring,       # learned but still happening -> not yet helping
             "quiet_share": round(quiet / len(promoted), 3) if promoted else 0,
         },
+        "recurrence_after_learning": _recurrence_after_learning(promoted),
         "top": [
             {"title": r["title"][:70], "type": r["type"], "seen": r.get("seen_count", 1),
              "state": r.get("state"), "promoted": bool(r.get("promoted"))}

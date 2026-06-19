@@ -53,6 +53,7 @@ def _bars(d, total):
 
 def render(m: dict) -> str:
     t = m["totals"]; fr = m["freshness"]; ef = m["effectiveness_proxy"]
+    ral = m.get("recurrence_after_learning", {})
     rows = "".join(
         f'<tr><td>{r["title"]}</td>'
         f'<td><span class="tag t-{r["type"]}">{r["type"]}</span></td>'
@@ -87,6 +88,12 @@ def render(m: dict) -> str:
     <div class="bar"><span style="width:{ef['quiet_share']*100:.0f}%;background:#3fb950"></span></div>
     <div class="note">Proxy only: a promoted lesson that goes <b>quiet</b> (stops recurring) suggests the
     injected knowledge is helping. Proving causation needs an on/off A/B over real usage.</div></div>
+  <div class="card"><b>Recurrence after learning</b>
+    <div class="row"><span>promoted (instrumented)</span><span>{ral.get('promoted', 0)}</span></div>
+    <div class="row"><span>quiet after learning</span><span style="color:var(--ok)">{ral.get('quiet_after', 0)}</span></div>
+    <div class="row"><span>recurred after learning</span><span style="color:var(--warn)">{ral.get('recurred_after', 0)}</span></div>
+    <div class="row"><span>avg post-promotion recurrences</span><span>{ral.get('avg_post_promotion_recurrences', 0.0)}</span></div>
+    <div class="note">Lessons that went quiet after being learned suggest the loop is working; proving causation needs an on/off A/B.</div></div>
 </div>
 
 <div class="card"><b>Top lessons</b>
