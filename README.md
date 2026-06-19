@@ -72,8 +72,21 @@ Nothing to do — it runs in the background. Optional commands:
 | Command | What |
 |---------|------|
 | `/claude-evolve:status` | Show the learning store: counts, top lessons, promoted skills |
+| `/claude-evolve:dashboard` | Metrics + a standalone visual HTML dashboard of learning quality |
 | `/claude-evolve:review` | LLM-assisted cleanup — dedup, sharpen, force-promote |
 | `/claude-evolve:init`   | Explain the loop / set up git tracking for the store |
+
+Measure it directly too:
+
+```bash
+python3 scripts/metrics.py      # retention, promotion rate, dedup ratio, freshness, effectiveness proxy
+python3 scripts/dashboard.py    # -> .claude/evolve/dashboard.html (open in a browser)
+```
+
+**Effectiveness is two layers.** The *mechanics* (capture / dedup / promote / inject / curate)
+are verified by `tests/`. The *behavioral* effect — does injecting a lesson actually reduce its
+recurrence? — is surfaced as a **proxy** (`effectiveness_proxy`): a promoted lesson that goes
+quiet *suggests* it's helping. Proving causation needs an on/off A/B over real usage.
 
 Agent `learning-reviewer` cross-checks a diff/plan against past mistakes before you ship.
 
