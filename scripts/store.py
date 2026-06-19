@@ -180,6 +180,26 @@ def normalize(text: str) -> str:
     t = re.sub(r"\s+", " ", t).strip()
     return t[:400]
 
+# Filler + correction-cue words carry no lesson content — drop them so that two
+# rewordings of the same pushback ("don't use unwrap" / "stop using unwrap") collapse
+# to the same key and accumulate toward promotion.
+_STOP = frozenset(
+    "the a an is are was were be to of in on at it this that these those you your i we "
+    "and or but not no nor so do dont don't doesnt use using used here there now then "
+    "please just like really actually stop revert undo wrong again redo make fix change "
+    "thats that's not what asked wanted approach broke break đừng dùng làm lại sai rồi "
+    "không phải đúng cách bỏ nữa cái thế đi".split()
+)
+
+def content_key(text: str) -> str:
+    """Order-independent key from the meaningful tokens of free text (for corrections)."""
+    # Drop apostrophes first so contractions ("don't"->"dont", "that's"->"thats")
+    # collapse to their stopword form instead of leaking fragments ("don", "that").
+    flat = (text or "").replace("'", "").replace("’", "")
+    toks = re.findall(r"[a-z0-9_]+", normalize(flat))
+    keep = sorted({t for t in toks if len(t) > 2 and t not in _STOP})
+    return " ".join(keep[:12]) or normalize(flat)
+
 # Transient / environment-specific errors — capturing them creates false constraints.
 # Applied ONLY to raw build-failure error text at capture time (capture.py), never to
 # user corrections or fixes (those may legitimately mention these words).

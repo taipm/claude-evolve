@@ -69,7 +69,7 @@ def _title_from(sig: dict):
                 f"User correction: {txt[:60]}",
                 f"User pushed back with: \"{txt[:400]}\". "
                 f"Recall the surrounding context to avoid repeating the mistake.",
-                "correction:" + store.normalize(txt))
+                "correction:" + store.content_key(txt))
     return ("note", sig.get("text", "")[:60], json.dumps(sig)[:500], "")
 
 

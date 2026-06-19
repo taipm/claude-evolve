@@ -101,6 +101,19 @@ def test_correction_precision_recall():
     rec("correction precision >= 0.85", prec >= 0.85, f"{prec:.2f}")
 
 
+def test_correction_reword_merges():
+    print("\n# corrections reworded with same core tokens merge -> promote")
+    d, envd = fresh()
+    for p in ("that's wrong, don't use unwrap in the library code",
+              "that's wrong, stop using unwrap in library code"):
+        run("capture.py", "correction", payload={"prompt": p}, env=envd)
+        run("consolidate.py", env=envd)
+    L = list(learnings(envd).values())
+    rec("reworded same-intent corrections merge to 1", len(L) == 1, f"{len(L)} learnings")
+    if L:
+        rec("merged correction promoted", L[0]["seen_count"] == 2 and L[0]["promoted"])
+
+
 def test_noise_not_dropped():
     print("\n# P0-3: lessons mentioning env-words are NOT dropped")
     d, envd = fresh()
@@ -213,6 +226,7 @@ def main():
     print("claude-evolve evaluation harness")
     print("=" * 64)
     test_correction_precision_recall()
+    test_correction_reword_merges()
     test_noise_not_dropped()
     test_build_noise_dropped()
     test_dedup_by_errcode()
