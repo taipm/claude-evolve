@@ -92,6 +92,31 @@ def _llm_polish(rec: dict) -> None:
         pass
 
 
+def _trigger_desc(rec: dict) -> str:
+    """A WHEN-to-use description so Claude Code actually INVOKES the skill. A skill is
+    matched on its description against the current task — describing the past observation
+    ("Learned rule: error X") never triggers; describing the situation does."""
+    typ = rec["type"]
+    seen = rec.get("seen_count", 1)
+    if typ == "build_failure":
+        code = _err_code(rec.get("title", "")) or _err_code(rec.get("body", ""))
+        m = re.search(r"Command: `([^`]+)`", rec.get("body", ""))
+        tool = m.group(1).split()[0] if m else "a build"
+        what = f"{code} " if code else ""
+        return (f"Use when `{tool}` fails with {what}or you are about to write code that "
+                f"could trigger it — a build error that recurred {seen}x in this project. "
+                f"Recall the recorded cause before proceeding.")
+    if typ == "fix":
+        return (f"Use when a build/test command fails the same way again — a fix worked "
+                f"before ({seen}x). Apply the recorded fix command.")
+    if typ == "correction":
+        toks = rec.get("key", "").split(":", 1)
+        topic = ", ".join(toks[1].split()[:6]) if len(toks) == 2 else ""
+        return (f"Use when working on: {topic or 'this area'}. The user corrected this "
+                f"approach before ({seen}x) — follow the recorded preference, don't repeat it.")
+    return f"A lesson that recurred {seen}x in this project."
+
+
 def _promote(rec: dict) -> None:
     """Write a learning as an auto-loadable SKILL.md once it's proven (seen >= threshold)."""
     if rec.get("promoted") or rec.get("seen_count", 1) < store.PROMOTE_AT:
@@ -107,11 +132,11 @@ def _promote(rec: dict) -> None:
     # or smuggle instructions into an auto-loaded skill.
     title = store.sanitize(rec["title"]).replace("\n", " ")
     body = store.sanitize(rec["body"])
-    desc = title[:200]
+    desc = store.sanitize(_trigger_desc(rec)).replace("\n", " ")[:380]
     md = (
         f"---\n"
         f"name: {slug}\n"
-        f"description: >-\n  Learned rule ({rec['type']}, seen {rec['seen_count']}x): {desc}\n"
+        f"description: >-\n  {desc}\n"
         f"metadata:\n  source: claude-evolve\n  seen_count: {rec['seen_count']}\n"
         f"---\n\n"
         f"# Learned: {title}\n\n"
@@ -153,6 +178,13 @@ def main() -> None:
                 promoted_now.append(rec["skill"])
         store.curate(data)
         store.save_learnings(data)
+
+    # Regenerate the CLAUDE.md-importable digest (highest-reliability resurfacing channel).
+    try:
+        import export_md
+        export_md.write(data)
+    except Exception as e:
+        store.debug(f"export_md failed: {e!r}")
 
     # Report into the transcript (Stop hook stdout is shown to the user).
     n = sum(1 for r in data.values() if r.get("state") == "active")

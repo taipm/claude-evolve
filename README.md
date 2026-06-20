@@ -99,10 +99,25 @@ Per-project, under your repo:
 ```
 .claude/evolve/learnings.json   # the knowledge base (telemetry + lessons)
 .claude/evolve/signals.jsonl    # raw signals, cleared after consolidation
+.claude/evolve/LEARNINGS.md     # CLAUDE.md-importable digest (top lessons)
 .claude/skills/evolve-*/        # auto-generated, auto-loaded skills
 ```
 
 Commit `.claude/evolve/` to share learnings with your team, or gitignore it to keep them local.
+
+### Three ways lessons resurface (by reliability)
+
+A learned lesson is no use if Claude never sees it. claude-evolve uses all three channels:
+
+1. **`CLAUDE.md` import (most reliable).** Add one line — `@.claude/evolve/LEARNINGS.md` — to
+   your project `CLAUDE.md`. That digest is regenerated every turn and is read with top
+   priority on every request. **Do this** — it's the surest channel.
+2. **SessionStart injection (always lands).** Top lessons are injected into context at session
+   start, capped. Automatic, no setup.
+3. **Auto-loaded skills (situational).** Promoted lessons become `.claude/skills/evolve-*`
+   with *trigger-oriented* descriptions ("Use when `cargo` fails with E0382…") so Claude
+   invokes them when the task matches — but skill invocation is the model's call, so this is
+   the least guaranteed channel.
 
 ---
 

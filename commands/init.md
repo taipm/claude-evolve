@@ -13,6 +13,19 @@ signal — no manual init is strictly required. If the user wants learnings comm
 the repo, tell them to add `.claude/evolve/` to git; if they want them local-only, add
 `.claude/evolve/` to `.gitignore`.
 
+**Strongly recommend** the user wire the highest-reliability channel: add this one line to
+the project's `CLAUDE.md`:
+
+```
+@.claude/evolve/LEARNINGS.md
+```
+
+`claude-evolve` regenerates `.claude/evolve/LEARNINGS.md` on every turn with the top
+lessons. Because `CLAUDE.md` is always read with top priority, this guarantees Claude
+applies them — more reliable than auto-loaded skills (which only fire when their
+description matches the task) or SessionStart injection (which is capped). Offer to add the
+import line to their CLAUDE.md for them if it isn't there yet.
+
 Explain the loop in one or two lines so the user knows what to expect:
 corrections, build failures and fixes are captured as they happen → consolidated on each
 turn-end → recurring lessons auto-become skills under `.claude/skills/` → injected into

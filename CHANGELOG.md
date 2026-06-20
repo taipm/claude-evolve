@@ -2,6 +2,14 @@
 
 ## 0.1.0 — 2026-06-19
 
+### Resurfacing reliability
+- **Trigger-oriented skill descriptions**: promoted skills now describe WHEN to use them
+  ("Use when `cargo` fails with E0382…") instead of restating the observation, so Claude
+  Code actually invokes them when the task matches.
+- **CLAUDE.md channel**: `scripts/export_md.py` regenerates `.claude/evolve/LEARNINGS.md`
+  every turn; add `@.claude/evolve/LEARNINGS.md` to your project CLAUDE.md for the
+  highest-reliability resurfacing (read on every turn, top priority).
+
 ### Hardening (pre-release, adversarial review + eval/AB harness)
 - **Concurrency**: file-lock (`fcntl`) around all `learnings.json` mutations; signals
   claimed by atomic rename (`take_signals`) so racing hooks never lose a signal.
