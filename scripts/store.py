@@ -31,7 +31,14 @@ def project_root() -> Path:
     return Path(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd())
 
 def store_dir() -> Path:
-    return project_root() / ".claude" / "evolve"
+    d = project_root() / ".claude" / "evolve"
+    try:
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+    except OSError:
+        # project root not writable (e.g. claude launched at `/`) -> per-project store under ~
+        key = hashlib.sha1(str(project_root()).encode()).hexdigest()[:12]
+        return Path.home() / ".claude" / "evolve" / key
 
 def _path(name: str) -> Path:
     return store_dir() / name
